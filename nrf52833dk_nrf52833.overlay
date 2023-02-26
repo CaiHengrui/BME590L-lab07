@@ -12,41 +12,20 @@
 // You can also visit the nRF DeviceTree extension documentation at https://nrfconnect.github.io/vscode-nrf-connect/devicetree/nrfdevicetree.html
 / {
     aliases {
-        heartbeat = &heartbeat_led;
-        buzzer = &buzzer_led;
-        ivdrip = &ivdrip_led;
-        alarm = &alarm_led;
-        error = &error_led;
-        button0 = &sleep;
-        button1 = &freq_up;
-        button2 = &freq_down;
-        button3 = &reset;
+        heartbeat = &led0;
+        buzzer = &led1;
+        ivdrip = &led2;
+        alarm = &led3;
+        error = &led4;
+        button0 = &button0_pin;
+        button1 = &button1_pin;
+        button2 = &button2_pin;
+        button3 = &button3_pin;
     };
 
     leds {
         compatible = "gpio-leds";
-
-        heartbeat_led: heartbeat-led {
-            gpios = <&gpio0 13 GPIO_ACTIVE_LOW>;
-            label = "Heartbeat LED";
-        };
-
-        buzzer_led: buzzer-led {
-            gpios = <&gpio0 14 GPIO_ACTIVE_LOW>;
-            label = "Buzzer LED";
-        };
-
-        ivdrip_led: ivdrip-led {
-            gpios = <&gpio0 15 GPIO_ACTIVE_LOW>;
-            label = "IV Drip LED";
-        };
-
-        alarm_led: alarm-led {
-            gpios = <&gpio0 16 GPIO_ACTIVE_LOW>;
-            label = "Alarm LED";
-        };
-
-        error_led: error-led {
+        led4: led_4 {
             gpios = <&gpio1 3 GPIO_ACTIVE_LOW>;
             label = "Error LED";
         };
@@ -55,22 +34,22 @@
     buttons {
         compatible = "gpio-keys";
 
-        sleep: sleep- {
+        button0_pin: button_0 {
             label = "button0";
             gpios = <&gpio0 17 GPIO_ACTIVE_LOW>;
         };
 
-        freq_up: freq-up {
+        button1_pin: button_1 {
             label = "button1";
             gpios = <&gpio0 18 GPIO_ACTIVE_LOW>;
         };
 
-        freq_down: freq-down {
+        button2_pin: button_2 {
             label = "button2";
             gpios = <&gpio0 19 GPIO_ACTIVE_LOW>;
         };
 
-        reset: reset- {
+        button3_pin: button_3 {
             label = "button3";
             gpios = <&gpio0 20 GPIO_ACTIVE_LOW>;
         };
