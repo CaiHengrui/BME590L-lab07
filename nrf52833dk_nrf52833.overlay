@@ -17,6 +17,10 @@
         ivdrip = &ivdrip_led;
         alarm = &alarm_led;
         error = &error_led;
+        button0 = &sleep;
+        button1 = &freq_up;
+        button2 = &freq_down;
+        button3 = &reset;
     };
 
     leds {
@@ -45,6 +49,30 @@
         error_led: error-led {
             gpios = <&gpio1 3 GPIO_ACTIVE_LOW>;
             label = "Error LED";
+        };
+    };
+
+    buttons {
+        compatible = "gpio-keys";
+
+        sleep: sleep- {
+            label = "button0";
+            gpios = <&gpio0 11 GPIO_ACTIVE_LOW>;
+        };
+
+        freq_up: freq-up {
+            label = "button1";
+            gpios = <&gpio0 12 GPIO_ACTIVE_LOW>;
+        };
+
+        freq_down: freq-down{
+            label = "button2";
+            gpios = <&gpio0 24 GPIO_ACTIVE_LOW>;
+        };
+
+        reset: reset- {
+            label = "button3";
+            gpios = <&gpio0 25 GPIO_ACTIVE_LOW>;
         };
     };
 };
