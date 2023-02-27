@@ -8,17 +8,25 @@
 #include <zephyr/drivers/gpio.h>
 
 /* 1000 msec = 1 sec */
-#define SLEEP_TIME_MS   1000
+#define SLEEP_TIME_MS 1000
+
+#define LED_ON_TIME_MS 1000
+#define DEC_ON_TIME_MS 100
+#define INC_ON_TIME_MS 100
+
+#define MIN_ON_TIME_MS 100
+#define MAX_ON_TIME_MS 2000
+
 
 /* The devicetree node identifier for the "led0" alias. */
-#define LED0_NODE DT_ALIAS(led0)
+// #define LED0_NODE DT_ALIAS(led0)
 
 /*
  * A build error on this line means your board is unsupported.
  * See the sample documentation for information on how to fix this.
  */
 
-static const struct gpio_dt_spec led = GPIO_DT_SPEC_GET(LED0_NODE, gpios);
+//static const struct gpio_dt_spec led = GPIO_DT_SPEC_GET(LED0_NODE, gpios);
 
 //LEDs//
 static const struct gpio_dt_spec heartbeat_led = GPIO_DT_SPEC_GET(DT_ALIAS(heartbeat), gpios);
@@ -33,11 +41,50 @@ static const struct gpio_dt_spec freq_up = GPIO_DT_SPEC_GET(DT_ALIAS(button1), g
 static const struct gpio_dt_spec freq_down = GPIO_DT_SPEC_GET(DT_ALIAS(button2), gpios);
 static const struct gpio_dt_spec reset = GPIO_DT_SPEC_GET(DT_ALIAS(button3), gpios);
 
+//Initialize GPIO Callback struct
+static struct gpio_callback sleep_cb;
+static struct gpio_callback freq_up_cb;
+static struct gpio_callback freq_down_cb;
+static struct gpio_callback reset_cb;
+
+/* Declarations */
+int check_interfaces_ready(void);
+int setup_channels_and_pins(void);
+    //declare callback function
+void sleep_callback(const struct device *dev, struct gpio_callback *cb, uint32_t pins);
+void freq_up_callback(const struct device *dev, struct gpio_callback *cb, uint32_t pins);
+void freq_down_callback(const struct device *dev, struct gpio_callback *cb, uint32_t pins);
+void reset_callback(const struct device *dev, struct gpio_callback *cb, uint32_t pins);
+
+
+/* Callbacks */
+void sleep_callback(const struct device *dev, struct gpio_callback *cb, uint32_t pins)
+{
+
+}
+
+void freq_up_callback(const struct device *dev, struct gpio_callback *cb, uint32_t pins)
+{
+
+}
+
+void freq_down_callback(const struct device *dev, struct gpio_callback *cb, uint32_t pins)
+{
+
+}
+
+void reset_callback(const struct device *dev, struct gpio_callback *cb, uint32_t pins)
+(
+
+)
+
+
+
 
 void main(void)
 {
-	int ret;
-
+/*	int ret;
+//? This is the equivalent of the setup function from an Arduino perspective.
 	if (!device_is_ready(led.port)) {
 		return;
 	}
@@ -46,23 +93,11 @@ void main(void)
 	if (ret < 0) {
 		return;
 	}
-
-	while (1) {
-		ret = gpio_pin_toggle_dt(&led);
-		if (ret < 0) {
-			return;
-		}
-		k_msleep(SLEEP_TIME_MS);
-	}
-
-
-
-
-
+/*/
 
 	int err;
 
-	err = check_interface_ready();
+	err = check_interfaces_ready();
 	if (err) {
 		LOG_ERR("Device interfaces not ready (err = %d)",err);
 	}
@@ -71,7 +106,33 @@ void main(void)
 	if (err) {
 		LOG_ERR("Error configuring IO channels / pins (err = %d)", err);
 	}
+    
 
+
+	while (1) {
+		err = gpio_pin_toggle_dt(&heartbeat_led); //??How to define lED is on /off
+		if (err < 0) {
+			return;
+		}
+		k_msleep(SLEEP_TIME_MS);
+	}//The heartbeat LED blinks at a fixed 1 Hz while main() is being executed ???
+
+    /* Setup callbacks *//*callback for limits*/
+    err = gpio_pin_interrupt_configure_dt(&sleep, GPIO_INT_EDGE_TO_ACTIVE);		
+	gpio_init_callback(&sleep_cb, sleep_callback, BIT(sleep.pin));
+	gpio_add_callback(sleep.port, &sleep_cb);
+
+    err = gpio_pin_interrupt_configure_dt(&freq_up, GPIO_INT_EDGE_TO_ACTIVE);		
+	gpio_init_callback(&freq_up, freq_up_callback, BIT(freq_up.pin));
+	gpio_add_callback(freq_up.port, &freq_up_cb);
+
+	err = gpio_pin_interrupt_configure_dt(&freq_down, GPIO_INT_EDGE_TO_ACTIVE);		
+	gpio_init_callback(&freq_down_cb, freq_down_callback, BIT(freq_down.pin));
+	gpio_add_callback(freq_down.port, &freq_down_cb);
+/*callback for limits*/
+	err = gpio_pin_interrupt_configure_dt(&reset, GPIO_INT_EDGE_TO_ACTIVE);		
+	gpio_init_callback(&reset_cb, reset_callback, BIT(reset.pin));
+	gpio_add_callback(reset.port, &reset_cb);
 }
 
 int check_interfaces_ready(void)
