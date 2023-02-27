@@ -98,31 +98,31 @@ int setup_channels_and_pins(void)
 	int err;
 
 	/* Configure  GPIO pins */
-	err = gpio_pin_configure_dt(&heartbeat_led, GPIO_OUTPUT_ACTIVE);
+	err = gpio_pin_configure_dt(&heartbeat_led, GPIO_ACTIVE_LOW);
 	if (err < 0) {
 		LOG_ERR("Cannot configure heartbeat LED.");
 		return err;
 	}
 
-	err = gpio_pin_configure_dt(&buzzer_led, GPIO_OUTPUT_INACTIVE);
+	err = gpio_pin_configure_dt(&buzzer_led, GPIO_ACTIVE_LOW);
 	if (err < 0) {
 		LOG_ERR("Cannot configure buzzer LED.");
 		return err;
 	}
 
-	err = gpio_pin_configure_dt(&ivdrip_led, GPIO_OUTPUT_INACTIVE);
+	err = gpio_pin_configure_dt(&ivdrip_led, GPIO_ACTIVE_LOW);
 	if (err < 0) {
 		LOG_ERR("Cannot configure ivdrip LED.");
 		return err;
 	}
 
-	err = gpio_pin_configure_dt(&alarm_led, GPIO_OUTPUT_INACTIVE);
+	err = gpio_pin_configure_dt(&alarm_led, GPIO_ACTIVE_LOW);
 	if (err < 0) {
 		LOG_ERR("Cannot configure alarm LED.");
 		return err;
 	}
 
-	err = gpio_pin_configure_dt(&error_led, GPIO_OUTPUT_INACTIVE);
+	err = gpio_pin_configure_dt(&error_led, GPIO_ACTIVE_LOW);
 	if (err < 0) {
 		LOG_ERR("Cannot configure error LED.");
 		return err;
