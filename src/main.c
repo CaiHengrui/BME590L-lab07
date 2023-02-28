@@ -19,7 +19,7 @@
 
 static bool reset_event = 0;
 static bool sleep_event = 0;
-
+static bool detect_sleep_event = 0;
 static bool freq_up_event = 0;
 static bool freq_down_event = 0;
 
@@ -102,73 +102,7 @@ void main(void)
 		LOG_ERR("Error configuring IO channels / pins (err = %d)", err);
 	}
     
-
-	while (1) {
-		err = gpio_pin_toggle_dt(&heartbeat_led); 
-		if (err < 0) {
-			return;
-		}
-		k_msleep(SLEEP_TIME_MS);  //0.5s toggle once?
-
-
-		if (freq_up_event = 1 ) {         //=1 necessary?
-			LED_ON_TIME_MS = LED_ON_TIME_MS - DEC_ON_TIME_MS ;
-			freq_up_event = 0;
-		}
-
-		if (freq_down_event = 1 ) {
-			LED_ON_TIME_MS = LED_ON_TIME_MS + INC_ON_TIME_MS ;
-			freq_down_event = 0;
-		}
-
-		while(LED_ON_TIME_MS > MIN_ON_TIME_MS & LED_ON_TIME_MS < MAX_ON_TIME_MS) {
-			gpio_pin_toggle_dt(&buzzer_led);
-			k_msleep(LED_ON_TIME_MS);
-			gpio_pin_toggle_dt(&buzzer_led);
-			gpio_pin_toggle_dt(&ivdrip_led);
-			k_msleep(LED_ON_TIME_MS);
-			gpio_pin_toggle_dt(&ivdrip_led);
-			gpio_pin_toggle_dt(&alarm_led);
-			k_msleep(LED_ON_TIME_MS);
-			gpio_pin_toggle_dt(&alarm_led);
-		}
-
-		while(LED_ON_TIME_MS < MIN_ON_TIME_MS | LED_ON_TIME_MS > MAX_ON_TIME_MS) {
-			// none of the action LEDs are illuminated and the error LED is continuously illuminated
-			gpio_pin_set_dt(&buzzer_led,0);
-			gpio_pin_set_dt(&ivdrip_led,0);
-			gpio_pin_set_dt(&alarm_led,0);
-			gpio_pin_set_dt(&error_led,1); 
-			//If the error LED is illuminated, there is no response to pressing the freq up or freq down
-//buttons until the reset button is pressed
-
-			if(reset_event = 1 ) {
-				LED_ON_TIME_MS = 1000;
-				reset_event = 0;
-			}
-			else{
-				freq_up_event = 0 ;
-				freq_down_event = 0 ;
-			}
-		}
-
-		while (sleep_event = 1){
-			gpio_pin_set_dt(&buzzer_led,0);
-			gpio_pin_set_dt(&ivdrip_led,0);
-			gpio_pin_set_dt(&alarm_led,0);
-			gpio_pin_set_dt(&error_led,0); 
-			sleep_event = 0;
-		}
-			if (sleep_event = 1){
-				//pressed again, at which time the device returns back to the exact state it was in before being put to sleep.
-			}
-
-		
-	}
-
-
-
-    /* Setup callbacks *//*callback for limits*/
+	    /* Setup callbacks *//*callback for limits*/
     err = gpio_pin_interrupt_configure_dt(&sleep, GPIO_INT_EDGE_TO_ACTIVE);	
 	if (err < 0) {
 		LOG_ERR("Cannot attach callback to sleep button.");		
@@ -196,6 +130,75 @@ void main(void)
 	}	
 	gpio_init_callback(&reset_cb, reset_callback, BIT(reset.pin));
 	gpio_add_callback(reset.port, &reset_cb);
+
+
+	while (1) {
+		err = gpio_pin_toggle_dt(&heartbeat_led); 
+		if (err < 0) {
+			return;
+		}
+		k_msleep(SLEEP_TIME_MS);  //0.5s toggle once?
+
+		if (sleep_event = 1){
+			if (detect_sleep_event == 0)
+			detect_sleep_event = 1;
+			else(detect_sleep_event == 1)
+			detect_sleep_event = 0;
+		}
+
+
+
+		while(LED_ON_TIME_MS > MIN_ON_TIME_MS && LED_ON_TIME_MS < MAX_ON_TIME_MS && detect_sleep_event==0) {
+			gpio_pin_toggle_dt(&buzzer_led);
+			k_msleep(LED_ON_TIME_MS);
+			gpio_pin_toggle_dt(&buzzer_led);
+
+			gpio_pin_toggle_dt(&ivdrip_led);
+			k_msleep(LED_ON_TIME_MS);
+			gpio_pin_toggle_dt(&ivdrip_led);
+
+			gpio_pin_toggle_dt(&alarm_led);
+			k_msleep(LED_ON_TIME_MS);
+			gpio_pin_toggle_dt(&alarm_led);
+
+			{
+				if (freq_up_event = 1 ) {
+					LED_ON_TIME_MS = LED_ON_TIME_MS - DEC_ON_TIME_MS ;
+					freq_up_event = 0;
+				}
+
+				else if (freq_down_event = 1 ) {
+					LED_ON_TIME_MS = LED_ON_TIME_MS + INC_ON_TIME_MS ;
+					freq_down_event = 0;
+				}
+
+				
+			}
+		}
+
+		while(LED_ON_TIME_MS < MIN_ON_TIME_MS | LED_ON_TIME_MS > MAX_ON_TIME_MS && detect_sleep_event==0) {
+			// none of the action LEDs are illuminated and the error LED is continuously illuminated
+			gpio_pin_set_dt(&buzzer_led,0);
+			gpio_pin_set_dt(&ivdrip_led,0);
+			gpio_pin_set_dt(&alarm_led,0);
+			gpio_pin_set_dt(&error_led,1); 
+			//If the error LED is illuminated, there is no response to pressing the freq up or freq down//buttons until the reset button is pressed
+
+			if(reset_event = 1 ) {
+				LED_ON_TIME_MS = 1000;
+				gpio_pin_set_dt(&error_led,0);
+				reset_event = 0;
+			}
+			else{
+				freq_up_event = 0 ;
+				freq_down_event = 0 ;
+			}
+		}
+
+
+		
+			
+	}	
 }
 
 int check_interfaces_ready(void)
@@ -278,3 +281,6 @@ int setup_channels_and_pins(void)
 
 	return 0;
 }
+
+
+
