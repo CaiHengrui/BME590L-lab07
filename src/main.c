@@ -66,8 +66,6 @@ static struct gpio_callback freq_down_cb;
 static struct gpio_callback reset_cb;
 
 /* Declarations */
-//int check_interfaces_ready(void);
-//int setup_channels_and_pins(void);
     //declare callback function
 void sleep_callback(const struct device *dev, struct gpio_callback *cb, uint32_t pins);
 void freq_up_callback(const struct device *dev, struct gpio_callback *cb, uint32_t pins);
@@ -114,12 +112,6 @@ void main(void)
 		return -1;
 	}
 
-	/*err = setup_channels_and_pins();
-	if (err) {
-		LOG_ERR("Error configuring IO channels / pins (err = %d)", err);
-	}
-    
-	int setup_channels_and_pins(void)*/
 	int err;
 	/* Configure  GPIO pins */
 	err = gpio_pin_configure_dt(&heartbeat_led, GPIO_OUTPUT_INACTIVE);
@@ -212,7 +204,7 @@ void main(void)
 		if (err < 0) {
 			return; 
 		}
-		k_msleep(SLEEP_TIME_MS);  //0.5s toggle once?
+		k_msleep(SLEEP_TIME_MS); 
 
 		if (sleep_event== 1){
 			printk("sleep!");
@@ -231,7 +223,6 @@ void main(void)
 		if((LED_ON_TIME_MS >= MIN_ON_TIME_MS) && (LED_ON_TIME_MS <= MAX_ON_TIME_MS)){
 			if(detect_sleep_event==0){
 			gpio_pin_toggle_dt(&buzzer_led);
-			//printk("led %d \n\r",buzzer_led.dt_flags);
 			k_msleep(LED_ON_TIME_MS);
 			gpio_pin_toggle_dt(&buzzer_led);
 			
@@ -263,8 +254,6 @@ void main(void)
 		if((LED_ON_TIME_MS < MIN_ON_TIME_MS) || (LED_ON_TIME_MS > MAX_ON_TIME_MS)){
 			if(detect_sleep_event==0){
 				gpio_pin_set_dt(&buzzer_led,0);
-				printk("led %d \n\r",buzzer_led.dt_flags);
-
 				gpio_pin_set_dt(&ivdrip_led,0);
 				gpio_pin_set_dt(&alarm_led,0);
 				gpio_pin_set_dt(&error_led,1); 
