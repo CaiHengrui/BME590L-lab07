@@ -6,6 +6,15 @@
 
 #include <zephyr/kernel.h>
 #include <zephyr/drivers/gpio.h>
+#include <zephyr/logging/log.h>
+#include <zephyr/devicetree.h>
+#include <zephyr/device.h>
+
+LOG_MODULE_REGISTER(mhealth_tymp, LOG_LEVEL_DBG);
+
+
+
+
 
 /* 1000 msec = 1 sec */
 #define SLEEP_TIME_MS 500
@@ -24,6 +33,9 @@ static bool freq_up_event = 0;
 static bool freq_down_event = 0;
 
 int LED_ON_TIME_MS = 1000;
+
+
+
 /* The devicetree node identifier for the "led0" alias. */
 // #define LED0_NODE DT_ALIAS(led0)
 
@@ -54,8 +66,8 @@ static struct gpio_callback freq_down_cb;
 static struct gpio_callback reset_cb;
 
 /* Declarations */
-int check_interfaces_ready(void);
-int setup_channels_and_pins(void);
+//int check_interfaces_ready(void);
+//int setup_channels_and_pins(void);
     //declare callback function
 void sleep_callback(const struct device *dev, struct gpio_callback *cb, uint32_t pins);
 void freq_up_callback(const struct device *dev, struct gpio_callback *cb, uint32_t pins);
@@ -90,166 +102,51 @@ void reset_callback(const struct device *dev, struct gpio_callback *cb, uint32_t
 
 void main(void)
 {
-	int err;
-
-	err = check_interfaces_ready();
-	if (err) {
-		LOG_ERR("Device interfaces not ready (err = %d)",err);
-	}
-
-	err = setup_channels_and_pins();
-	if (err) {
-		LOG_ERR("Error configuring IO channels / pins (err = %d)", err);
-	}
-    
-	    /* Setup callbacks *//*callback for limits*/
-    err = gpio_pin_interrupt_configure_dt(&sleep, GPIO_INT_EDGE_TO_ACTIVE);	
-	if (err < 0) {
-		LOG_ERR("Cannot attach callback to sleep button.");		
-	}
-	gpio_init_callback(&sleep_cb, sleep_callback, BIT(sleep.pin));
-	gpio_add_callback(sleep.port, &sleep_cb);
-
-    err = gpio_pin_interrupt_configure_dt(&freq_up, GPIO_INT_EDGE_TO_ACTIVE);
-	if (err < 0) {
-		LOG_ERR("Cannot attach callback to frequency up button.");		
-	}			
-	gpio_init_callback(&freq_up, freq_up_callback, BIT(freq_up.pin));
-	gpio_add_callback(freq_up.port, &freq_up_cb);
-
-	err = gpio_pin_interrupt_configure_dt(&freq_down, GPIO_INT_EDGE_TO_ACTIVE);	
-	if (err < 0) {
-		LOG_ERR("Cannot attach callback to frequency down button.");		
-	}	
-	gpio_init_callback(&freq_down_cb, freq_down_callback, BIT(freq_down.pin));
-	gpio_add_callback(freq_down.port, &freq_down_cb);
-
-	err = gpio_pin_interrupt_configure_dt(&reset, GPIO_INT_EDGE_TO_ACTIVE);	
-	if (err < 0) {
-		LOG_ERR("Cannot attach callback to reset button.");		
-	}	
-	gpio_init_callback(&reset_cb, reset_callback, BIT(reset.pin));
-	gpio_add_callback(reset.port, &reset_cb);
-
-
-	while (1) {
-		err = gpio_pin_toggle_dt(&heartbeat_led); 
-		if (err < 0) {
-			return;
-		}
-		k_msleep(SLEEP_TIME_MS);  //0.5s toggle once?
-
-		if (sleep_event = 1){
-			if (detect_sleep_event == 0)
-			detect_sleep_event = 1;
-			else(detect_sleep_event == 1)
-			detect_sleep_event = 0;
-		}
-
-
-
-		while(LED_ON_TIME_MS > MIN_ON_TIME_MS && LED_ON_TIME_MS < MAX_ON_TIME_MS && detect_sleep_event==0) {
-			gpio_pin_toggle_dt(&buzzer_led);
-			k_msleep(LED_ON_TIME_MS);
-			gpio_pin_toggle_dt(&buzzer_led);
-
-			gpio_pin_toggle_dt(&ivdrip_led);
-			k_msleep(LED_ON_TIME_MS);
-			gpio_pin_toggle_dt(&ivdrip_led);
-
-			gpio_pin_toggle_dt(&alarm_led);
-			k_msleep(LED_ON_TIME_MS);
-			gpio_pin_toggle_dt(&alarm_led);
-
-			{
-				if (freq_up_event = 1 ) {
-					LED_ON_TIME_MS = LED_ON_TIME_MS - DEC_ON_TIME_MS ;
-					freq_up_event = 0;
-				}
-
-				else if (freq_down_event = 1 ) {
-					LED_ON_TIME_MS = LED_ON_TIME_MS + INC_ON_TIME_MS ;
-					freq_down_event = 0;
-				}
-
-				
-			}
-		}
-
-		while(LED_ON_TIME_MS < MIN_ON_TIME_MS | LED_ON_TIME_MS > MAX_ON_TIME_MS && detect_sleep_event==0) {
-			// none of the action LEDs are illuminated and the error LED is continuously illuminated
-			gpio_pin_set_dt(&buzzer_led,0);
-			gpio_pin_set_dt(&ivdrip_led,0);
-			gpio_pin_set_dt(&alarm_led,0);
-			gpio_pin_set_dt(&error_led,1); 
-			//If the error LED is illuminated, there is no response to pressing the freq up or freq down//buttons until the reset button is pressed
-
-			if(reset_event = 1 ) {
-				LED_ON_TIME_MS = 1000;
-				gpio_pin_set_dt(&error_led,0);
-				reset_event = 0;
-			}
-			else{
-				freq_up_event = 0 ;
-				freq_down_event = 0 ;
-			}
-		}
-
-
-		
-			
-	}	
-}
-
-int check_interfaces_ready(void)
-{
-	/* Check if all devices are ready to go */
-//Why need only one???
-	/* This should check for the entire gpio0 interface */
+	
+	
 	if (!device_is_ready(heartbeat_led.port)) {
 		LOG_ERR("gpio0 interface not ready.");
 		return -1;
 	}
-	
-	/* This should check for the entire gpio1 interface */
+
 	if (!device_is_ready(error_led.port)) {
 		LOG_ERR("gpio1 interface not ready.");
 		return -1;
 	}
 
-	return 0;
-}
-
-int setup_channels_and_pins(void)
-{
+	/*err = setup_channels_and_pins();
+	if (err) {
+		LOG_ERR("Error configuring IO channels / pins (err = %d)", err);
+	}
+    
+	int setup_channels_and_pins(void)*/
 	int err;
-
 	/* Configure  GPIO pins */
-	err = gpio_pin_configure_dt(&heartbeat_led, GPIO_ACTIVE_LOW);
+	err = gpio_pin_configure_dt(&heartbeat_led, GPIO_OUTPUT_INACTIVE);
 	if (err < 0) {
 		LOG_ERR("Cannot configure heartbeat LED.");
 		return err;
 	}
 
-	err = gpio_pin_configure_dt(&buzzer_led, GPIO_ACTIVE_LOW);
+	err = gpio_pin_configure_dt(&buzzer_led, GPIO_OUTPUT_INACTIVE);
 	if (err < 0) {
 		LOG_ERR("Cannot configure buzzer LED.");
 		return err;
 	}
 
-	err = gpio_pin_configure_dt(&ivdrip_led, GPIO_ACTIVE_LOW);
+	err = gpio_pin_configure_dt(&ivdrip_led, GPIO_OUTPUT_INACTIVE);
 	if (err < 0) {
 		LOG_ERR("Cannot configure ivdrip LED.");
 		return err;
 	}
 
-	err = gpio_pin_configure_dt(&alarm_led, GPIO_ACTIVE_LOW);
+	err = gpio_pin_configure_dt(&alarm_led, GPIO_OUTPUT_INACTIVE);
 	if (err < 0) {
 		LOG_ERR("Cannot configure alarm LED.");
 		return err;
 	}
 
-	err = gpio_pin_configure_dt(&error_led, GPIO_ACTIVE_LOW);
+	err = gpio_pin_configure_dt(&error_led, GPIO_OUTPUT_INACTIVE);
 	if (err < 0) {
 		LOG_ERR("Cannot configure error LED.");
 		return err;
@@ -279,8 +176,109 @@ int setup_channels_and_pins(void)
 		return err;
 	}
 
-	return 0;
+	/* Setup callbacks *//*callback for limits*/
+    err = gpio_pin_interrupt_configure_dt(&sleep, GPIO_INT_EDGE_TO_ACTIVE);	
+	if (err < 0) {
+		LOG_ERR("Cannot attach callback to sleep button.");		
+	}
+	gpio_init_callback(&sleep_cb, sleep_callback, BIT(sleep.pin));
+	gpio_add_callback(sleep.port, &sleep_cb);
+
+    err = gpio_pin_interrupt_configure_dt(&freq_up, GPIO_INT_EDGE_TO_ACTIVE);
+	if (err < 0) {
+		LOG_ERR("Cannot attach callback to frequency up button.");		
+	}		
+	gpio_init_callback(&freq_up_cb, freq_up_callback, BIT(freq_up.pin));
+	gpio_add_callback(freq_up.port, &freq_up_cb);
+
+	err = gpio_pin_interrupt_configure_dt(&freq_down, GPIO_INT_EDGE_TO_ACTIVE);	
+	if (err < 0) {
+		LOG_ERR("Cannot attach callback to frequency down button.");		
+	}
+	gpio_init_callback(&freq_down_cb, freq_down_callback, BIT(freq_down.pin));
+	gpio_add_callback(freq_down.port, &freq_down_cb);
+
+	err = gpio_pin_interrupt_configure_dt(&reset, GPIO_INT_EDGE_TO_ACTIVE);	
+	if (err < 0) {
+		LOG_ERR("Cannot attach callback to reset button.");		
+	}	
+	gpio_init_callback(&reset_cb, reset_callback, BIT(reset.pin));
+	gpio_add_callback(reset.port, &reset_cb);
+
+
+	while (1) {
+		
+		err = gpio_pin_toggle_dt(&heartbeat_led); 
+		if (err < 0) {
+			return; 
+		}
+		k_msleep(SLEEP_TIME_MS);  //0.5s toggle once?
+
+		if (sleep_event== 1){
+			printk("sleep!");
+			if ( detect_sleep_event == 0){
+				detect_sleep_event = 1;
+				sleep_event=0;
+			}
+			else if ( detect_sleep_event == 1)
+			{
+				detect_sleep_event = 0;
+				sleep_event=0;
+			}	
+			printk("led %d \n\r",detect_sleep_event);	
+		}
+
+		if((LED_ON_TIME_MS >= MIN_ON_TIME_MS) && (LED_ON_TIME_MS <= MAX_ON_TIME_MS)){
+			if(detect_sleep_event==0){
+			gpio_pin_toggle_dt(&buzzer_led);
+			//printk("led %d \n\r",buzzer_led.dt_flags);
+			k_msleep(LED_ON_TIME_MS);
+			gpio_pin_toggle_dt(&buzzer_led);
+			
+
+			gpio_pin_toggle_dt(&ivdrip_led);
+			k_msleep(LED_ON_TIME_MS);
+			gpio_pin_toggle_dt(&ivdrip_led);
+
+			gpio_pin_toggle_dt(&alarm_led);
+			k_msleep(LED_ON_TIME_MS);
+			gpio_pin_toggle_dt(&alarm_led);
+			printk("led action \n\r");
+
+			if (freq_up_event) {
+				printk("freq_up!");
+				LED_ON_TIME_MS = LED_ON_TIME_MS - DEC_ON_TIME_MS ;
+				printk("led %d \n\r",LED_ON_TIME_MS);
+				freq_up_event = 0;
+			}
+
+			else if (freq_down_event) {printk("freq_down!");
+				LED_ON_TIME_MS = LED_ON_TIME_MS + INC_ON_TIME_MS ;
+				printk("led %d \n\r",LED_ON_TIME_MS);
+				freq_down_event = 0;
+			}
+			}
+		}
+
+		if((LED_ON_TIME_MS < MIN_ON_TIME_MS) || (LED_ON_TIME_MS > MAX_ON_TIME_MS)){
+			if(detect_sleep_event==0){
+				gpio_pin_set_dt(&buzzer_led,0);
+				printk("led %d \n\r",buzzer_led.dt_flags);
+
+				gpio_pin_set_dt(&ivdrip_led,0);
+				gpio_pin_set_dt(&alarm_led,0);
+				gpio_pin_set_dt(&error_led,1); 
+
+			if(reset_event) {printk("reset!");
+				LED_ON_TIME_MS = 1000;
+				gpio_pin_set_dt(&error_led,0);
+				reset_event = 0;
+			}
+			else{
+				freq_up_event = 0 ;
+				freq_down_event = 0 ;
+			}
+			}
+		}		
+	}	
 }
-
-
-

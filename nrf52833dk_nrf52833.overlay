@@ -17,10 +17,10 @@
         ivdrip = &led2;
         alarm = &led3;
         error = &led4;
-        button0 = &button0_pin; //sleep
-        button1 = &button1_pin; //freq_up
-        button2 = &button2_pin; //freq_down
-        button3 = &button3_pin; //reset
+        button0 = &button0; //sleep
+        button1 = &button1; //freq_up
+        button2 = &button2; //freq_down
+        button3 = &button3; //reset
     };
 
     leds {
@@ -31,27 +31,5 @@
         };
     };
 
-    buttons {
-        compatible = "gpio-keys";
 
-        button0_pin: button_0 {
-            label = "button0";
-            gpios = <&gpio0 17 (GPIO_PULL_UP | GPIO_ACTIVE_LOW)>;
-        };
-
-        button1_pin: button_1 {
-            label = "button1";
-            gpios = <&gpio0 18 (GPIO_PULL_UP | GPIO_ACTIVE_LOW)>;
-        };
-
-        button2_pin: button_2 {
-            label = "button2";
-            gpios = <&gpio0 19 (GPIO_PULL_UP | GPIO_ACTIVE_LOW)>;
-        };
-
-        button3_pin: button_3 {
-            label = "button3";
-            gpios = <&gpio0 20 (GPIO_PULL_UP | GPIO_ACTIVE_LOW)>;
-        };
-    };
 };

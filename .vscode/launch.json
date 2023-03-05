@@ -1,0 +1,12 @@
+{
+	"version": "0.2.0",
+	"configurations": [
+		{
+			"type": "nrf-connect",
+			"request": "launch",
+			"name": "Launch blinky_lab07\\build",
+			"config": "c:/Users/Caihe/classwork590L/blinky_lab07/build",
+			"runToEntryPoint": "main"
+		}
+	]
+}
